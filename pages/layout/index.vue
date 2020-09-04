@@ -72,7 +72,7 @@ export default {
     },
     mounted() {
       if(this.version){
-        // console.log('v' + this.version)
+        console.log('v' + this.version)
         localStorage.setItem('version', this.version)
       }
     },
