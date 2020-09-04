@@ -68,7 +68,13 @@ export default {
         }
     },
     computed: {
-      ...mapState(['user'])
+      ...mapState(['user','version'])
+    },
+    mounted() {
+      if(this.version){
+        console.log('v' + this.version)
+        localStorage.setItem('version', this.version)
+      }
     },
 }
 </script>

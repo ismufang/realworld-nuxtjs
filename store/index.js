@@ -2,7 +2,8 @@ const cookieparser = process.server ? require('cookieparser') : undefined
 
 export const state = () => {
   return {
-    user: null
+    user: null,
+    version: '0.1.2'
   }
 }
 
