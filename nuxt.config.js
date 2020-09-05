@@ -1,6 +1,8 @@
 module.exports = {
-    // loading: false, // ?????
-    loading: '~/components/loading.vue', // ???????
+    // loading: false, 
+    // 自定义加载组件
+    loading: '~/components/loading.vue', 
+    
     router: {
         // linkActiveClass: 'active',
         linkExactActiveClass: 'active',
