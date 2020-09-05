@@ -6,12 +6,16 @@
             <div class="row">
 
                 <div class="col-xs-12 col-md-10 offset-md-1">
-                    <img :src="user.image" class="user-img" />
-                    <h4>Eric Simons</h4>
+                    <img :src="profile.image" class="user-img" />
+                    <h4>{{profile.username}}</h4>
                     <p>
-                        Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games
+                        {{profile.bio}}
                     </p>
-                    <button class="btn btn-sm btn-outline-secondary action-btn">
+
+                    <nuxt-link v-if="isSelf" class="btn btn-sm btn-outline-secondary action-btn" ng-show="$ctrl.isUser" to="/settings">
+                        <i class="ion-gear-a"></i> Edit Profile Settings
+                    </nuxt-link>
+                    <button v-else class="btn btn-sm btn-outline-secondary action-btn">
                         <i class="ion-plus-round"></i>
                         &nbsp;
                         Follow Eric Simons
@@ -29,53 +33,49 @@
                 <div class="articles-toggle">
                     <ul class="nav nav-pills outline-active">
                         <li class="nav-item">
-                            <a class="nav-link active" href="">My Articles</a>
+                            <nuxt-link class="nav-link" exact :class="{'active': tab === 'author'}" :to="{
+                                name: 'profile',
+                                params: {
+                                    username: profile.username
+                                },
+                                query: {
+                                    tab: 'author'
+                                }
+                            }">My Articles</nuxt-link>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="">Favorited Articles</a>
+                            <nuxt-link class="nav-link" exact :class="{'active': tab === 'favorited'}" :to="{
+                                name: 'profile',
+                                params: {
+                                    username: profile.username
+                                },
+                                query: {
+                                    tab: 'favorited'
+                                }
+                            }">Favorited Articles</nuxt-link>
                         </li>
                     </ul>
                 </div>
 
-                <div class="article-preview">
-                    <div class="article-meta">
-                        <a href=""><img src="http://i.imgur.com/Qr71crq.jpg" /></a>
-                        <div class="info">
-                            <a href="" class="author">Eric Simons</a>
-                            <span class="date">January 20th</span>
-                        </div>
-                        <button class="btn btn-outline-primary btn-sm pull-xs-right">
-                            <i class="ion-heart"></i> 29
-                        </button>
-                    </div>
-                    <a href="" class="preview-link">
-                        <h1>How to build webapps that scale</h1>
-                        <p>This is the description for the post.</p>
-                        <span>Read more...</span>
-                    </a>
-                </div>
+                <article-item :articles="articles"></article-item>
 
-                <div class="article-preview">
-                    <div class="article-meta">
-                        <a href=""><img src="http://i.imgur.com/N4VcUeJ.jpg" /></a>
-                        <div class="info">
-                            <a href="" class="author">Albert Pai</a>
-                            <span class="date">January 20th</span>
-                        </div>
-                        <button class="btn btn-outline-primary btn-sm pull-xs-right">
-                            <i class="ion-heart"></i> 32
-                        </button>
-                    </div>
-                    <a href="" class="preview-link">
-                        <h1>The song you won't ever stop singing. No matter how hard you try.</h1>
-                        <p>This is the description for the post.</p>
-                        <span>Read more...</span>
-                        <ul class="tag-list">
-                            <li class="tag-default tag-pill tag-outline">Music</li>
-                            <li class="tag-default tag-pill tag-outline">Song</li>
-                        </ul>
-                    </a>
-                </div>
+                <!-- 分页 -->
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item ng-scope" :class="{'active': item === page}" v-for="item in totalPage" :key="item">
+                            <nuxt-link class="page-link ng-binding" :to="{
+                                name: 'profile',
+                                params: {
+                                    username: profile.username
+                                },
+                                query: {
+                                    tab: tab,
+                                    page: item
+                                }
+                            }">{{ item }}</nuxt-link>
+                        </li>
+                    </ul>
+                </nav>
 
             </div>
 
@@ -87,11 +87,74 @@
 
 <script>
 import { mapState } from 'vuex'
+import { getProfile } from '@/api/user'
+import { getArticles } from '@/api/article'
+import ArticleItem from '@/components/article-item'
+
 export default {
     name: 'ProfileIndex',
     middleware: 'auth',
+    components: {
+        ArticleItem
+    },
     computed: {
-        ...mapState(['user'])
+        ...mapState(['user']),
+        isSelf() {
+            return this.user.username === this.profile.username
+        },
+        totalPage() {
+            return Math.ceil(this.articlesCount / this.limit)
+        }
+    },
+    watchQuery: ['page', 'tab'],
+    async asyncData({
+        isDev,
+        route,
+        store,
+        env,
+        params,
+        query,
+        req,
+        res,
+        redirect,
+        error
+    }) {
+        // console.log(query)
+        const page = query.page * 1 || 1;
+        const limit = 5;
+        const currUser = params.username
+        const tab = query.tab || 'author'
+        const data = {
+            [tab]: currUser,
+            limit,
+            offset: (page - 1) * limit
+        }
+
+        const [articleRes, profileRes] = await Promise.all([
+            getArticles(data),
+            getProfile(currUser)
+        ])
+
+        const {
+            articles,
+            articlesCount
+        } = articleRes.data
+        const {
+            profile
+        } = profileRes.data
+
+        articles.forEach(item => {
+            item.favDis = false
+        })
+        // console.log(data)
+        return {
+            profile,
+            articles,
+            articlesCount,
+            tab,
+            page,
+            limit,
+        }
     },
 }
 </script>

@@ -16,7 +16,7 @@ import home from '@/pages/live/index/index';
                 <div class="feed-toggle">
                     <ul class="nav nav-pills outline-active">
                         <li class="nav-item" v-if="user">
-                            <nuxt-link class="nav-link" exact :class="{active: tab === 'your_feed'}" :to="{
+                            <nuxt-link class="nav-link" exact :class="{'active': tab === 'your_feed'}" :to="{
                                 name: 'home',
                                 query: {
                                     tab: 'your_feed'
@@ -24,12 +24,12 @@ import home from '@/pages/live/index/index';
                             }">Your Feed</nuxt-link>
                         </li>
                         <li class="nav-item">
-                            <nuxt-link class="nav-link" exact :class="{active: tab === 'global_feed'}" :to="{
+                            <nuxt-link class="nav-link" exact :class="{'active': tab === 'global_feed'}" :to="{
                                 name: 'home',
                             }">Global Feed</nuxt-link>
                         </li>
                         <li class="nav-item" v-if="tag">
-                            <nuxt-link class="nav-link" exact :class="{active: tab === 'tag'}" :to="{
+                            <nuxt-link class="nav-link" exact :class="{'active': tab === 'tag'}" :to="{
                                 name: 'home',
                                 query: {
                                     tab: 'tag',
@@ -57,7 +57,7 @@ import home from '@/pages/live/index/index';
               }" class="author">{{article.author.username}}</nuxt-link>
                             <span class="date">{{article.createdAt | date}}</span>
                         </div>
-                        <button class="btn btn-outline-primary btn-sm pull-xs-right" :class="{active: article.favorited}" @click="onFav(article)" :disabled="article.favDis">
+                        <button class="btn btn-outline-primary btn-sm pull-xs-right" :class="{'active': article.favorited}" @click="onFav(article)" :disabled="article.favDis">
                             <i class="ion-heart"></i> {{article.favoritesCount}}
                         </button>
                     </div>
@@ -114,21 +114,17 @@ import home from '@/pages/live/index/index';
 </template>
 
 <script>
-import {
-    getArticles,
-    getYourArts,
-    addFav,
-    delFav
-} from '@/api/article'
-import {
-    getTags
-} from '@/api/tag'
-import {
-    mapState
-} from 'vuex'
+import { getArticles, getYourArts, addFav, delFav } from '@/api/article'
+import { getTags } from '@/api/tag'
+import { mapState } from 'vuex'
+
+import ArticleItem from '@/components/article-item'
 
 export default {
     name: 'HomeIndex',
+    components: {
+        ArticleItem
+    },
 
     async asyncData({
         query
@@ -137,9 +133,10 @@ export default {
         const limit = 10;
         const tab = query.tab || 'global_feed';
         const tag = query.tag;
-        const loadArticles = tab === 'global_feed' ?
+        const loadArticles = tab !== 'your_feed' ?
             getArticles :
             getYourArts
+
         const [articleRes, tagRes] = await Promise.all([
             loadArticles({
                 limit,
@@ -173,6 +170,7 @@ export default {
             tab,
             tag
         }
+
     },
     watchQuery: ['page', 'tag', 'tab'],
     computed: {

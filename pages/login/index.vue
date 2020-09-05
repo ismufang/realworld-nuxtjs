@@ -47,8 +47,8 @@ export default {
     data() {
         return {
             user: {
-                username: '', // 6yhnmju7
-                email: '', // 6yhnmju7@123.com
+                username: '', // 2fang
+                email: '', // 6yhnmju7@1.com
                 password: '' // 6yhnmju7
             },
             errors: {}
@@ -61,14 +61,12 @@ export default {
     },
     methods: {
         onSubmit(){
-            let data = this.isLogin ? login({
-                user: this.user
-            }) :
-            register({
+            let data = this.isLogin ? login : register
+
+            data({
                 user: this.user
             })
-
-            data.then(res => {
+            .then(res => {
                 // console.log(res)
                 let user = res.data.user
                 this.$store.commit('setUser', user)

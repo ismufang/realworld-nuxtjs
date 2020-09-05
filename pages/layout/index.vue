@@ -12,7 +12,7 @@
 
           <template v-if="user">
             <li class="nav-item">
-              <nuxt-link class="nav-link" to="/editor">
+              <nuxt-link class="nav-link" to="/editor/">
                 <i class="ion-compose"></i>&nbsp;New Post
               </nuxt-link>
             </li>
@@ -22,7 +22,7 @@
               </nuxt-link>
             </li>
             <li class="nav-item">
-              <nuxt-link class="nav-link" to="/profile/1">
+              <nuxt-link class="nav-link" :to="'/profile/'+user.username">
               <img class="user-pic" :src="user.image" alt="avatar">
               {{user.username}}
               </nuxt-link>
