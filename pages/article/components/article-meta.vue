@@ -28,16 +28,16 @@
         </span>
     </template>
     <template v-else>
-        <button class="btn btn-sm btn-outline-secondary" :class="{'active': article.author.following}">
+        <button class="btn btn-sm btn-outline-secondary" :class="{'active': article.author.following}" @click="followFn(article.author.username)">
             <i class="ion-plus-round"></i>
             &nbsp;
-            Follow Eric Simons <span class="counter">(10)</span>
+            {{article.author.following ? 'unFollow' : 'Follow'}} Eric Simons
         </button>
         &nbsp;&nbsp;
-        <button class="btn btn-sm btn-outline-primary" :class="{'active': article.author.favorited}">
+        <button class="btn btn-sm btn-outline-primary" :class="{'active': article.favorited}" @click="favFn(article.slug)">
             <i class="ion-heart"></i>
             &nbsp;
-            Favorite Post <span class="counter">(29)</span>
+            {{article.favorited ? 'Unfavorite' : 'Favorite'}} Post <span class="counter">({{article.favoritesCount}})</span>
         </button>
     </template>
 
@@ -49,6 +49,8 @@ import {
     mapState
 } from 'vuex'
 import { delArticle } from '@/api/article'
+import { follow, unfollow } from '@/api/follow'
+import { fav, unfav } from '@/api/fav'
 export default {
     name: 'ArticleMeta',
     props: {
@@ -69,7 +71,27 @@ export default {
             .then(()=>{
                 this.$router.push('/')
             })
-        }
+        },
+        followFn(username){
+            const request = !this.article.author.following ? follow : unfollow
+
+            request(username)
+            .then(({data}) => {
+                // console.log(data)
+                this.article.author.following = data.profile.following
+            })
+        },
+
+        favFn(slug){
+            const request = !this.article.favorited ? fav : unfav
+
+            request(slug)
+            .then(({data}) => {
+                // console.log(data)
+                this.article.favorited = data.article.favorited
+                this.article.favoritesCount = data.article.favoritesCount
+            })
+        },
     },
 }
 </script>
